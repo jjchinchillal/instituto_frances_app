@@ -1,32 +1,82 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../utils/app_colors.dart';
-import 'login_screen.dart'; // Asegúrate que la ruta sea correcta
-import 'profile_screen.dart'; // Importa el perfil
+import 'login_screen.dart';
+import 'profile_screen.dart';
+import '../widgets/custom_alert.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
+
+  void _showInProgress(BuildContext context) {
+    CustomAlert.show(
+      context,
+      title: 'En desarrollo',
+      message: 'Esta funcionalidad estará disponible próximamente.',
+      type: AlertType.warning,
+    );
+  }
+
+  void _confirmLogout(BuildContext context) {
+    showDialog(
+      context: context,
+      builder:
+          (_) => AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+            title: Text(
+              '¿Cerrar sesión?',
+              style: TextStyle(
+                color: AppColors.error,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            content: const Text(
+              '¿Estás seguro de que deseas cerrar sesión?',
+              textAlign: TextAlign.center,
+            ),
+            actionsAlignment: MainAxisAlignment.center,
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.error,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                onPressed: () async {
+                  await Supabase.instance.client.auth.signOut();
+                  if (!context.mounted) return;
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                    (route) => false,
+                  );
+                },
+                child: const Text('Confirmar'),
+              ),
+            ],
+          ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Inicio'),
         backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await Supabase.instance.client.auth.signOut();
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-                (route) => false,
-              );
-            },
-          ),
-        ],
+        automaticallyImplyLeading: false,
+        centerTitle: true,
+        title: Image.asset('assets/images/Horizontal-W-NBG.png', height: 80),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -36,21 +86,25 @@ class HomeScreen extends StatelessWidget {
           mainAxisSpacing: 16,
           children: [
             _buildOption(
+              context: context,
               title: 'Retos Diarios',
               icon: Icons.star,
-              onTap: () {},
+              onTap: () => _showInProgress(context),
             ),
             _buildOption(
+              context: context,
               title: 'Mini Juegos',
               icon: Icons.videogame_asset,
-              onTap: () {},
+              onTap: () => _showInProgress(context),
             ),
             _buildOption(
+              context: context,
               title: 'Progreso',
               icon: Icons.bar_chart,
-              onTap: () {},
+              onTap: () => _showInProgress(context),
             ),
             _buildOption(
+              context: context,
               title: 'Perfil',
               icon: Icons.person,
               onTap: () {
@@ -60,7 +114,18 @@ class HomeScreen extends StatelessWidget {
                 );
               },
             ),
-            _buildOption(title: 'Ajustes', icon: Icons.settings, onTap: () {}),
+            _buildOption(
+              context: context,
+              title: 'Ajustes',
+              icon: Icons.settings,
+              onTap: () => _showInProgress(context),
+            ),
+            _buildOption(
+              context: context,
+              title: 'Cerrar sesión',
+              icon: Icons.logout,
+              onTap: () => _confirmLogout(context),
+            ),
           ],
         ),
       ),
@@ -68,6 +133,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildOption({
+    required BuildContext context,
     required String title,
     required IconData icon,
     required VoidCallback onTap,
@@ -76,11 +142,11 @@ class HomeScreen extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.secondary.withOpacity(0.9),
+          color: AppColors.secondary,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withAlpha(90),
               blurRadius: 6,
               offset: const Offset(2, 2),
             ),
